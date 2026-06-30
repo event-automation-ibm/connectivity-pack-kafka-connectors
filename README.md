@@ -4,12 +4,13 @@ By using the IBM Connectivity Pack, Connectivity Pack Kafka connectors enable da
 
 **Note:**  
 - Connectivity Pack v2.0.0 and earlier are compatible with Event Streams 11.8 and earlier, but not compatible with Kafka Connect 4.0.0.
-- Connectivity Pack v3.0.0 is compatible with Event Streams 12.0.0 and later, and compatible with Kafka Connect 4.0.0.
+- Connectivity Pack v3.0.0 and later are compatible with Event Streams 12.0.0 and later, and compatible with Kafka Connect 4.0.0.
 
 ## Contents
 
 - [Prerequisites](#prerequisites)
 - [Installing the IBM Connectivity Pack](#installing-the-ibm-connectivity-pack)
+- [Upgrading the Connectivity Pack](#upgrading-the-connectivity-pack)
 - [Starting Kafka Connect](#starting-kafka-connect)
 - [Running the connectors](#running-the-connectors)
 - [License](#license)
@@ -39,7 +40,7 @@ helm install <RELEASE-NAME> <CONNECTIVITY-PACK-HELM-CHART-URL> --set license.lic
 Where:
 
 - `<RELEASE-NAME>` is the release name of your choice. For example, `ibm-connectivity-pack`
-- `<CONNECTIVITY-PACK-HELM-CHART-URL>` is the URL of the latest version of the Connectivity Pack Helm chart. For example: `https://github.com/ibm-messaging/connectivity-pack-kafka-connectors/releases/download/3.1.0/ibm-connectivity-pack-3.1.0.tgz`
+- `<CONNECTIVITY-PACK-HELM-CHART-URL>` is the URL of the latest version of the Connectivity Pack Helm chart. For example: `https://github.com/ibm-messaging/connectivity-pack-kafka-connectors/releases/download/3.1.1/ibm-connectivity-pack-3.1.1.tgz`
 - `license.licenseId=<LICENSE-ID>` is the license identifier (ID) for the program that you purchased. For more information, see [licensing reference](https://ibm.github.io/event-automation/support/licensing/).
 - `license.accept` determines whether the license is accepted (default is `false` if not specified).
 - `<NAMESPACE>` is the namespace where you want to install the Connectivity Pack. This must be in the same namespace where an Event Streams instance is deployed.
@@ -48,7 +49,39 @@ You can override the default configuration parameters by using the `--set` flag 
 
 For more information about installing the Connectivity Pack, including a complete list of configuration parameters supported by the Helm chart, see [installing the Connectivity Pack](./ibm-connectivity-pack/README.md#configuring).
 
-If you are on an earlier version of Connectivity Pack, you can [upgrade](./ibm-connectivity-pack/README.md#upgrading) the Connectivity Pack to the latest version.
+## Upgrading the Connectivity Pack
+
+If you are using an earlier version of Connectivity Pack, you can upgrade to the latest version. 
+
+## Upgrade paths
+
+The upgrade path for Connectivity Pack depends on the version of IBM Event Streams you are using:
+
+- **Connectivity Pack v2.0.0 and earlier**: Compatible with Event Streams 11.8 and earlier. Not compatible with Kafka Connect 4.0.0.
+- **Connectivity Pack v3.0.0 and later**: Compatible with Event Streams 12.0.0 and later, and compatible with Kafka Connect 4.0.0.
+
+When upgrading from Connectivity Pack v2.x to v3.x, ensure that your Event Streams instance is also upgraded to version 12.0.0 or later before upgrading the Connectivity Pack.
+
+
+**Important:** If you are upgrading from Connectivity Pack 3.1.0 to 3.1.1, the Salesforce Connector no longer supports the `updatedField` parameter in the subscription configuration. Remove this parameter from your connector configuration before upgrading to avoid errors. For more information, see the [troubleshooting documentation](./troubleshooting/upgrading-3.1.0-to-3.1.1.md).
+
+### Upgrade by using Helm
+
+Run the following command to upgrade your Connectivity Pack installation:
+
+```bash
+helm upgrade <RELEASE-NAME> <CONNECTIVITY-PACK-HELM-CHART-URL> -n <NAMESPACE>
+```
+For example:
+```bash
+helm upgrade ibm-connectivity-pack ibm-connectivity-pack-3.1.1.tgz -n deploy-es-scram-nocs
+```
+
+Where:
+
+- `<RELEASE-NAME>` is the existing release name of your Connectivity Pack installation. For example, `ibm-connectivity-pack`
+- `<CONNECTIVITY-PACK-HELM-CHART-URL>` is the URL or path to the Helm chart package for the version that you want to upgrade to. For example, `https://github.com/ibm-messaging/connectivity-pack-kafka-connectors/releases/download/3.1.1/ibm-connectivity-pack-3.1.1.tgz` or a local file path such as `ibm-connectivity-pack-3.1.1.tgz`.
+- `<NAMESPACE>` is the namespace where the Connectivity Pack is currently installed. This must be the same namespace where your Event Streams instance is deployed.
 
 ## Starting Kafka Connect
 
@@ -207,7 +240,7 @@ Configure your connector with information about your external system by followin
 
       # Subscription params applicable only for poller events
       connectivitypack.source.<customObject>.CREATED_POLLER.subscription.pollingInterval: <pollingInterval>
-      connectivitypack.source.<customObject>.CREATED_POLLER.subscription.updatedField: <the field name that contains the timestamp of when the object was updated>
+      connectivitypack.source.<customObject>.CREATED_POLLER.subscription.updatedField: <the field name that contains the timestamp of when the object was updated> # `updatedField` parameter is not supported in Connectivity Pack 3.1.1 and later.
       connectivitypack.source.<customObject>.CREATED_POLLER.subscription.createdField: <the field name that contains the timestamp of when the object was created>
 
       # Optional, sets the format for Kafka topic names created by the connector.

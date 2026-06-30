@@ -19,6 +19,32 @@ spec:
   tls:
     termination: passthrough
     insecureEdgeTerminationPolicy: None
-  {{ end }}
+  {{- end }}
   wildcardPolicy: None
-{{ end }}
+{{- if .Values.event.enable }}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "ibm-connectivity-pack.service" . }}-websocket
+  namespace: {{ include "ibm-connectivity-pack.namespace" . }}
+  labels:
+    {{- include "ibm-connectivity-pack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: websocket
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+spec:
+  to:
+    kind: Service
+    name: {{ include "ibm-connectivity-pack.service" . }}
+    weight: 100
+  port:
+    targetPort: websocket
+  {{- if .Values.certificate.enable }}
+  tls:
+    termination: passthrough
+    insecureEdgeTerminationPolicy: Redirect
+  {{- end }}
+  wildcardPolicy: None
+{{- end }}
+{{- end }}

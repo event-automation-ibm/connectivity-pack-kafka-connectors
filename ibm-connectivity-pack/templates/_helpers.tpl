@@ -1,4 +1,15 @@
 {{/*
+Return releaseNameOverride
+*/}}
+{{- define "ibm-connectivity-pack.releaseNameOverride" -}}
+{{- if .Values.releaseNameOverride }}
+{{- .Values.releaseNameOverride }}
+{{- else }}
+{{- .Release.Name }}
+{{- end }}
+{{- end }}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "ibm-connectivity-pack.name" -}}
@@ -15,10 +26,10 @@ If release name contains chart name it will be used as a full name.
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
 {{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- if contains $name (include "ibm-connectivity-pack.releaseNameOverride" .) }}
+{{- include "ibm-connectivity-pack.releaseNameOverride" . | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s" (include "ibm-connectivity-pack.releaseNameOverride" .) $name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -48,15 +59,15 @@ Selector labels
 */}}
 {{- define "ibm-connectivity-pack.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "ibm-connectivity-pack.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/instance: {{ include "ibm-connectivity-pack.releaseNameOverride" . }}
 {{- end }}
 
 {{/*
 Create the name of the deployment
 */}}
 {{- define "ibm-connectivity-pack.deploymentName" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-deployment
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-deployment
 {{- end }}
 {{- end }}
 
@@ -75,8 +86,8 @@ Return namespace
 Create the name of the serviceAccount
 */}}
 {{- define "ibm-connectivity-pack.serviceAccountName" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-service-account
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-service-account
 {{- end }}
 {{- end }}
 
@@ -84,8 +95,8 @@ Create the name of the serviceAccount
 Create the name of the config-map
 */}}
 {{- define "ibm-connectivity-pack.configMap" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-configmap
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-configmap
 {{- end }}
 {{- end }}
 
@@ -93,8 +104,8 @@ Create the name of the config-map
 Create the name of the token store secret
 */}}
 {{- define "ibm-connectivity-pack.tokenStore" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-ts
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-ts
 {{- end }}
 {{- end }}
 
@@ -102,8 +113,8 @@ Create the name of the token store secret
 Create the name of the basic auth secret
 */}}
 {{- define "ibm-connectivity-pack.basicAuthCreds" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-creds
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-creds
 {{- end }}
 {{- end }}
 
@@ -111,7 +122,7 @@ Create the name of the basic auth secret
 Create the name of the basic auth password
 */}}
 {{- define "ibm-connectivity-pack.basicAuthPassword" -}}
-{{- if .Release.Name }}
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
 {{- randAlphaNum 13 | nospace -}}
 {{- end }}
 {{- end }}
@@ -120,8 +131,21 @@ Create the name of the basic auth password
 Create the name of the service
 */}}
 {{- define "ibm-connectivity-pack.service" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-service
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-service
+{{- end }}
+{{- end }}
+
+{{/*
+Create the Connector service URL
+Connector services are accessible via: <service-name>.<namespace>.svc.cluster.local
+This URL will trigger pod spawn when invoked (scale-from-zero)
+*/}}
+{{- define "ibm-connectivity-pack.connectorServiceUrl" -}}
+{{- if .Values.knative.enable }}
+{{- printf "%s.%s.svc.cluster.local" (include "ibm-connectivity-pack.deploymentName" .) (include "ibm-connectivity-pack.namespace" .) }}
+{{- else }}
+{{- printf "%s.%s.svc.cluster.local" (include "ibm-connectivity-pack.service" .) (include "ibm-connectivity-pack.namespace" .) }}
 {{- end }}
 {{- end }}
 
@@ -180,8 +204,8 @@ Create the java service route
 Create the role
 */}}
 {{- define "ibm-connectivity-pack.role" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-role
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-role
 {{- end }}
 {{- end }}
 
@@ -189,8 +213,8 @@ Create the role
 Create the rolebinding
 */}}
 {{- define "ibm-connectivity-pack.rolebinding" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-rolebinding
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-rolebinding
 {{- end }}
 {{- end }}
 
@@ -198,8 +222,8 @@ Create the rolebinding
 Create the networkpolicy
 */}}
 {{- define "ibm-connectivity-pack.networkpolicy" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-networkpolicy
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-networkpolicy
 {{- end }}
 {{- end }}
 
@@ -208,7 +232,7 @@ Create the name for image pull secret name
 */}}
 {{- define "ibm-connectivity-pack.imagePullSecretname" -}}
 {{- if eq .Values.image.imagePullSecretName  "" }}
-{{- default  .Release.Name }}-image-pull-cred
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-image-pull-cred
 {{ else }}
 {{- .Values.image.imagePullSecretName }}
 {{- end }}
@@ -230,7 +254,7 @@ Create the name for stunnel server cert secret
 {{- if .Values.certificate.serverSecretName }}
 {{- .Values.certificate.serverSecretName }}
 {{- else }}
-{{- default  .Release.Name }}-server-certificate
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-server-certificate
 {{- end }}
 {{- end }}
 
@@ -241,7 +265,7 @@ Create the name for stunnel client cert secret
 {{- if .Values.certificate.clientSecretName }}
 {{- .Values.certificate.clientSecretName }}
 {{- else }}
-{{- default  .Release.Name }}-client-certificate
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-client-certificate
 {{- end }}
 {{- end }}
 
@@ -295,8 +319,8 @@ Create the name for stunnel client cert secret
 Create the name for Horizontal Pod Autoscaler
 */}}
 {{- define "ibm-connectivity-pack.hpa" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-hpa
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-hpa
 {{- end }}
 {{- end }}
 
@@ -304,8 +328,8 @@ Create the name for Horizontal Pod Autoscaler
 Create the name of prehook job
 */}}
 {{- define "ibm-connectivity-pack.preHookJob" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-prehook-job
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-prehook-job
 {{- end }}
 {{- end }}
 
@@ -313,8 +337,8 @@ Create the name of prehook job
 Create the name of the posthook job
 */}}
 {{- define "ibm-connectivity-pack.postDeleteHookJob" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-post-delete-job
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-post-delete-job
 {{- end }}
 {{- end }}
 
@@ -323,7 +347,7 @@ Create the name of the posthook job
 Create the name of the service
 */}}
 {{- define "ibm-connectivity-pack.preHookJobSa" -}}
-{{- if .Release.Name }}
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
 {{- include "ibm-connectivity-pack.preHookJob" . }}-sa
 {{- end }}
 {{- end }}
@@ -333,7 +357,7 @@ Create the name of the service
 Create the name of the service
 */}}
 {{- define "ibm-connectivity-pack.preHookJobRole" -}}
-{{- if .Release.Name }}
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
 {{- include "ibm-connectivity-pack.preHookJob" . }}-creator
 {{- end }}
 {{- end }}
@@ -342,7 +366,7 @@ Create the name of the service
 Create the name of the service
 */}}
 {{- define "ibm-connectivity-pack.preHookJobRoleBinding" -}}
-{{- if .Release.Name }}
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
 {{- include "ibm-connectivity-pack.preHookJob" . }}-creator-binding
 {{- end }}
 {{- end }}
@@ -351,8 +375,8 @@ Create the name of the service
 Create the name of the service
 */}}
 {{- define "ibm-connectivity-pack.config" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-config
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-config
 {{- end }}
 {{- end }}
 
@@ -360,17 +384,17 @@ Create the name of the service
 Create the name of the service
 */}}
 {{- define "ibm-connectivity-pack.envConfig" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-env-config
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-env-config
 {{- end }}
 {{- end }}
 
 {{/*
-Create the name of the java service TLS 
+Create the name of the java service TLS
 */}}
 {{- define "ibm-connectivity-pack.java-server-conf" -}}
-{{- if .Release.Name }}
-{{- default  .Release.Name }}-java-server-config
+{{- if include "ibm-connectivity-pack.releaseNameOverride" . }}
+{{- default (include "ibm-connectivity-pack.releaseNameOverride" .) }}-java-server-config
 {{- end }}
 {{- end }}
 
@@ -420,11 +444,11 @@ Render environment variables for node-runtime-metrics
   value: {{ ternary "true" "false" (eq .Values.action.enableMetrics "true") | quote }}
 {{- end }}
 {{- if hasKey .Values.action "metricsRotationWindowSec" }}
-name: METRICS_ROTATION_WINDOW_SEC
+- name: METRICS_ROTATION_WINDOW_SEC
   value: {{ .Values.action.metricsRotationWindowSec | quote }}
 {{- end }}
 {{- if hasKey .Values.action "metricsDirectory" }}
-name: METRICS_DIRECTORY
+- name: METRICS_DIRECTORY
   value: {{ .Values.action.metricsDirectory | quote }}
 {{- end }}
 {{- if hasKey .Values.action "metricsCollectIntervalMs" }}
@@ -437,7 +461,7 @@ name: METRICS_DIRECTORY
 {{/*
 Action probe
 */}}
-{{- define "ibm-connectivity-pack.actonProbe" -}}
+{{- define "ibm-connectivity-pack.actionProbe" -}}
 {{- if .Values.certificate.enable }}
 exec:
   command:
@@ -500,5 +524,24 @@ httpGet:
   path: /
   port: 9080
   scheme: HTTP
+{{- end }}
+{{- end }}
+
+{{/*
+Common Instana environment variables
+*/}}
+{{- define "ibm-connectivity-pack.instanaEnvVars" -}}
+{{- if .Values.instana.enable }}
+- name: INSTANA_ENABLE
+  value: "true"
+- name: INSTANA_AGENT_HOST
+  valueFrom:
+    fieldRef:
+      apiVersion: v1
+      fieldPath: status.hostIP
+- name: INSTANA_DISABLE_USE_OPENTELEMETRY
+  value: {{ .Values.instana.disableUseOpentelemetry | quote }}
+- name: INSTANA_PROCESS_NAME
+  value: {{ .Release.Name | quote }}
 {{- end }}
 {{- end }}

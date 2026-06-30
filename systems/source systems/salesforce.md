@@ -109,6 +109,8 @@ Optional: The heartbeat topic verifies that the connector is active and operatio
 
 The following is an example of a connector configuration for Salesforce:
 
+**Note:** The `updatedField` parameter is not supported in Connectivity Pack 3.1.1 and later.
+
 ```yaml
 apiVersion: eventstreams.ibm.com/v1beta2
 kind: KafkaConnector
@@ -142,7 +144,7 @@ spec:
     connectivitypack.source.<object3>.events: 'CREATEDORUPDATED_POLLER'
     # Subscription parameters for polling. Required only for POLLER events
     connectivitypack.source.<object3>.CREATEDORUPDATED_POLLER.subscription.pollingInterval: 1
-    connectivitypack.source.<object3>.CREATEDORUPDATED_POLLER.subscription.updatedField: LastModifiedDate
+    connectivitypack.source.<object3>.CREATEDORUPDATED_POLLER.subscription.updatedField: LastModifiedDate  # `updatedField` parameter is not supported in Connectivity Pack 3.1.1 and later.
     connectivitypack.source.<object3>.CREATEDORUPDATED_POLLER.subscription.createdField: CreatedDate
     # Optional, sets the format for Kafka topic names created by the connector.
     # You can use placeholders such as '${object}' and '${eventType}', which the connector will replace automatically.

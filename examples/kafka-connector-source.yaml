@@ -62,7 +62,7 @@ spec:
 
     # Subscription parameters for polling. Required only for POLLER events
     connectivitypack.source.Test_CustomObject__c.CREATED_POLLER.subscription.pollingInterval: 1
-    connectivitypack.source.Test_CustomObject__c.CREATED_POLLER.subscription.updatedField: LastModifiedDate
+    connectivitypack.source.Test_CustomObject__c.CREATED_POLLER.subscription.updatedField: LastModifiedDate  # `updatedField` parameter is not supported in Connectivity Pack 3.1.1 and later.
     connectivitypack.source.Test_CustomObject__c.CREATED_POLLER.subscription.createdField: CreatedDate
 
     # Optional, sets the format for Kafka topic names created by the connector.

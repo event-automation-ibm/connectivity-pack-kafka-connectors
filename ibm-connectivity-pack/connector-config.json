@@ -1,15 +1,15 @@
 {
   "action-connectors": {
-    "tag": "3.1.1-beta",
-    "digest": "sha256:28f9c6420cd9b2565715b85a9c04401d244e684a9b3a47e6b58b3b114c3b9a96"
+    "tag": "3.1.1",
+    "digest": "sha256:673ccb18af32377e539fcbe6403203ff17bee5dcbb21cde7dffb33c79b4bd2b8"
   },
   "event-connectors": {
-    "tag": "3.1.1-beta",
-    "digest": "sha256:40a5c0451f5a052ee8945a64c112646cf487aa5a5ee544b0fdd5cc6c4ad2e192"
+    "tag": "3.1.1",
+    "digest": "sha256:a55eac241c5b206d9e98f1c294c8a5fcfee40712a4a932183b074053dc78e4df"
   },
   "java-tech-connectors": {},
   "connectivity-pack-prehook": {
-    "tag": "3.1.1-beta",
-    "digest": "sha256:5cd94eff588f81b0ca361dcf926abdd64a6ef8ca88a4b36b0d3293b4fac33f12"
+    "tag": "3.1.1",
+    "digest": "sha256:1cfadad24f0c751a9f7255c8db66bf2bb0209d7a42f3bd296baf64c2034c8c4b"
   }
 }

@@ -1,4 +1,4 @@
-{{ if .Values.autoScaling.enable -}}
+{{- if and .Values.autoScaling.enable (not .Values.knative.enable) }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -41,4 +41,4 @@ spec:
       target:
         type: Utilization
         averageUtilization: {{ .Values.autoScaling.memoryUtilization }}
-{{ end }}
+{{- end }}
