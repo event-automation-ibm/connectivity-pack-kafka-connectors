@@ -27,6 +27,11 @@ rules:
       - secrets
     resourceNames: 
       - {{ include "ibm-connectivity-pack.tokenStore" . | quote }}
+      {{ if .Values.mcp.enable  -}}
+      {{ if .Values.enableRefreshTokenMode  -}}
+      - {{ .Values.mcp.accountsSecretName | quote }}
+      {{ end }}
+      {{ end }}
 ---
 {{- if eq .Values.skipHooks false }}
 apiVersion: rbac.authorization.k8s.io/v1

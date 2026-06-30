@@ -20,7 +20,16 @@ spec:
       imagePullSecrets: 
         - name: {{ include "ibm-connectivity-pack.imagePullSecretname" . }}
       containers:
-        - name: mtls-cert-generator
+        - name: uninstall-job
+          env:
+            # HOME=/tmp: Required for kubectl to avoid permission errors when accessing default $HOME/.kube/config
+            # Without this, kubectl tries to read /home/default/.kube/config which causes "permission denied" errors
+            # since the container runs as non-root user 1000:1001
+            - name: HOME
+              value: /tmp
+            # KUBECONFIG="": Prevents kubectl from looking for config files, uses in-cluster service account instead
+            - name: KUBECONFIG
+              value: ""
           securityContext:
             capabilities:
               drop:

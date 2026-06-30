@@ -6,22 +6,25 @@
 # Default values for IBM Connectivity pack.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-skipHooks: false
+
+###############################################################################
+# Global Configuration
+###############################################################################
+
+skipHooks: false # Set to true to skip pre-install/pre-upgrade hooks (certificate generation job)
+# Note: If certificate.generate is true, skipHooks must be false to allow certificate generation
+releaseNameOverride: ''
 namespace: ''
 license:
   accept: false
-replicaCount: 1 # Replica of the POD
-bunyan: "'{\"loglevel\" : \"info\", \"logsrc\" : true, \"logstdouttext\" : {}}'" # Override Log configuration
-environmentVariables: {} # Yaml object ENV to be added on action and event pods
-enableRefreshTokenMode: true
-strictdiscoveryaccount: true
-openapiSchemaNoAnonymousTypes: false
-enableLegacyApiVersions: false
 annotations:
   productID: "0c44732a8b794b2d9e9b842b2dfc8361"
   productName: "IBM Connectivity Pack - Free"
   productMetric: "FREE"
   productChargedContainers: "All"
+###############################################################################
+# Image Configuration
+###############################################################################
 image:
   registry: cp.icr.io # Image registry base URL
   path: cp/ibm-eventstreams
@@ -29,10 +32,16 @@ image:
   imagePullEmail: dummyEmail # Image pull secret email ID
   imagePullUsername: iamapikey # Image pull username 
   imagePullPassword: ibm-entitlement-key # Image pull password 
+###############################################################################
+# Security Configuration
+###############################################################################
 certificate:
-  enable: true # Enable MTLS or TLS
-  MTLSenable: true # Enable MTLS if true else fallback to TLS
-  generate: true # generate new certificates use this for certificate rotation
+  enable: true # Enable TLS/MTLS. Set to false for HTTP-only (no encryption)
+  MTLSenable: true # Enable MTLS (mutual TLS) requiring client certificates
+  # false = TLS only (server cert, no client cert required)
+  # true = MTLS (both server and client certificates required)
+  generate: true # Set to true to generate new certificates (for certificate rotation)
+  # When true, skipHooks must be false to allow the prehook job to run
   clientSecretName: '' # If MTLS/TLS secret for client already exist please specify here
   clientCertPropertyName: 'tls.crt'
   clientCertKeyPropertyName: 'tls.key'
@@ -44,56 +53,9 @@ certificate:
   serverKeyStrorePKCSPropertyName: 'server.p12'
   serverTrustStorePKCSPropertyName: 'truststore.p12'
   pkcsPassword: '' # pkcs.p12 password
-route:
-  enable: false # generate OpenShift route for external access
-  domain: 'example.com' # subdomain of OpenShift cluster where connector service is being deployed
 basicAuth:
   enable: false # Enable basic auth for service 
   username: 'csuser'
-preHook:
-  image: connectivity-pack-prehook
-  digest: sha256:5cd94eff588f81b0ca361dcf926abdd64a6ef8ca88a4b36b0d3293b4fac33f12
-  tag: 3.1.1-beta
-action:
-  name: action-connectors
-  fileStreamingTimeout: '120000'
-  udaPersistentVolumeClaimName: ''
-  maxFileSize: '262144000'
-  image: action-connectors
-  digest: sha256:28f9c6420cd9b2565715b85a9c04401d244e684a9b3a47e6b58b3b114c3b9a96
-  resources: # Update below value for vertical scaling of container
-    limits:
-      cpu: '1'
-      ephemeral-storage: 10Gi
-      memory: 750Mi
-    requests:
-      cpu: 250m
-      ephemeral-storage: 5Gi
-      memory: 400Mi
-  tag: 3.1.1-beta
-event:
-  enable: true # Set to true if Event container is needed
-  name: event-connectors
-  image: event-connectors # Update image
-  digest: sha256:40a5c0451f5a052ee8945a64c112646cf487aa5a5ee544b0fdd5cc6c4ad2e192
-  resources: # Update below value for vertical scaling of container
-    limits:
-      cpu: '1'
-      ephemeral-storage: 10Gi
-      memory: 750Mi
-    requests:
-      cpu: 250m
-      ephemeral-storage: 5Gi
-      memory: 400Mi
-  tag: 3.1.1-beta
-javaservice:
-  enable: false
-autoScaling:
-  enable: false # Update this to true to enable autoScaling
-  minReplicas: 1 # What is the minimum replica needed
-  maxReplicas: 5 # What is the maximum replica needed
-  cpuUtilization: 70 # % of CPU utilization after which POD to be replicated 
-  memoryUtilization: 70 # % of Memory utilization after which POD to be replicated 
 securityContext:
   capabilities:
     drop:
@@ -104,8 +66,100 @@ securityContext:
   allowPrivilegeEscalation: false
   seccompProfile:
     type: RuntimeDefault
+###############################################################################
+# Common Application Configuration
+###############################################################################
+bunyan: "'{\"loglevel\" : \"info\", \"logsrc\" : true, \"logstdouttext\" : {}}'" # Override Log configuration
+environmentVariables: {} # Yaml object ENV to be added on action and event pods
+enableRefreshTokenMode: false
+strictdiscoveryaccount: true
+openapiSchemaNoAnonymousTypes: false
+enableLegacyApiVersions: false
+rateLimitWindowMs: "60000"
+rateLimitMaxRequests: "1000"
 csCommon:
   eventList: "['salesforceevent','jira','github','googlecalendar','googlebigquery','servicenow','hdfsevent']"
+###############################################################################
+# Pre-Hook Configuration
+###############################################################################
+preHook:
+  image: connectivity-pack-prehook
+  digest: sha256:1cfadad24f0c751a9f7255c8db66bf2bb0209d7a42f3bd296baf64c2034c8c4b
+  tag: 3.1.1
+###############################################################################
+# Action Connectors Configuration
+###############################################################################
+action:
+  name: action-connectors
+  image: action-connectors
+  digest: sha256:673ccb18af32377e539fcbe6403203ff17bee5dcbb21cde7dffb33c79b4bd2b8
+  fileStreamingTimeout: '120000'
+  maxFileSize: '262144000'
+  udaPersistentVolumeClaimName: ''
+  resources: # Update below value for vertical scaling of container
+    limits:
+      cpu: '1'
+      ephemeral-storage: 10Gi
+      memory: 750Mi
+    requests:
+      cpu: 250m
+      ephemeral-storage: 5Gi
+      memory: 400Mi
+  tag: 3.1.1
+###############################################################################
+# Event Connectors Configuration
+###############################################################################
+event:
+  enable: true # Set to true if Event container is needed
+  name: event-connectors
+  image: event-connectors # Update image
+  digest: sha256:a55eac241c5b206d9e98f1c294c8a5fcfee40712a4a932183b074053dc78e4df
+  resources: # Update below value for vertical scaling of container
+    limits:
+      cpu: '1'
+      ephemeral-storage: 10Gi
+      memory: 750Mi
+    requests:
+      cpu: 250m
+      ephemeral-storage: 5Gi
+      memory: 400Mi
+  tag: 3.1.1
+###############################################################################
+# Java Service Configuration
+###############################################################################
+javaservice:
+  enable: false
+###############################################################################
+# Standard Kubernetes Deployment Configuration
+###############################################################################
+replicaCount: 1 # Replica of the POD
+autoScaling:
+  enable: false # Update this to true to enable autoScaling
+  minReplicas: 1 # What is the minimum replica needed
+  maxReplicas: 5 # What is the maximum replica needed
+  cpuUtilization: 70 # % of CPU utilization after which POD to be replicated 
+  memoryUtilization: 70 # % of Memory utilization after which POD to be replicated 
+###############################################################################
+# Knative Deployment Configuration
+###############################################################################
+knative:
+  enable: false # Set to true to deploy as Knative Service instead of standard Deployment
+  # Knative autoscaling configuration
+  minScale: 0 # Minimum pods (0 = scale-to-zero capability)
+  maxScale: 10 # Maximum pods
+  scaleDownDelay: "2m" # Time to wait before scaling down
+  scaleMetric: "concurrency" # Metric to use for scaling (concurrency, rps, cpu, memory)
+  target: 100 # Target value for the scaling metric
+  containerConcurrency: 0 # Max concurrent requests per container (0 = unlimited)
+###############################################################################
+# OpenShift Route Configuration
+###############################################################################
+route:
+  enable: false # generate OpenShift route for external access
+  domain: 'example.com' # subdomain of OpenShift cluster where connector service is being deployed
+###############################################################################
+# MCP Server Configuration
+###############################################################################
 mcp:
   enable: false # Update this to true to enable mcp server running as HTTP Streamaable  require tools and account config to give 
   accountsSecretName: '<name>' # Give the name of the secret which contains configuration key with accounts.yaml structure.
@@ -113,3 +167,6 @@ mcp:
   oauth:
     enable: false # enables aouth details
     settings: '{ "baseIdpUrl": "<idpUrl>", "wellKnownOAuthMetdataUrl": "<idpUrlwithMetaUri>", "scopesSupported": ["mcp:read", "mcp:tools", "mcp-server-audience"], "oauthAudience": "mcp-server", "clientRegistrationEndpoint": "<>", "mcpMethodRoleMapping": {    "tools/list": ["mcp:read"] ,   "tools/call": ["mcp:tools"]}, "clientDetails": {    "clientId": <>,    "clientSecret": <> } }'
+instana:
+  enable: false # Set to true to enable Instana monitoring
+  disableUseOpentelemetry: true # Disable OpenTelemetry integration
